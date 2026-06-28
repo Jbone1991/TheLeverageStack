@@ -9,7 +9,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
+const { uploadVideo } = require('./upload-r2');
 
 const ROOT = path.resolve(__dirname, '..');
 const QUEUE_DIR = path.join(ROOT, 'content', 'queue');
@@ -108,19 +108,8 @@ async function postNextInQueue() {
     if (script.caption) caption = script.caption;
   }
 
-  // Meta requires the video to be accessible via public URL.
-  // For local files, you need a CDN or ngrok tunnel.
-  // Production approach: upload to R2/S3 first, then pass the URL.
-  const videoUrl = process.env.VIDEO_PUBLIC_URL_BASE
-    ? `${process.env.VIDEO_PUBLIC_URL_BASE}/${videoFile}`
-    : null;
-
-  if (!videoUrl) {
-    console.error('[post] VIDEO_PUBLIC_URL_BASE not set in .env');
-    console.error('[post] Options: Cloudflare R2, AWS S3, or run ngrok for local testing.');
-    console.error('[post] See docs/meta-setup-guide.md for details.');
-    process.exit(1);
-  }
+  // Upload to Cloudflare R2 first — Meta requires a public URL, not a local file
+  const videoUrl = await uploadVideo(videoPath, videoFile);
 
   console.log(`\n[post] Posting: ${videoFile}`);
   console.log(`[post] Caption preview: ${caption.slice(0, 80)}...`);

@@ -1,0 +1,10 @@
+.env
+content/rendered/
+content/queue/
+content/posted/
+assets/audio/
+assets/backgrounds/
+node_modules/
+*.mp4
+*.mp3
+*.wav

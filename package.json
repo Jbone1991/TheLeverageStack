@@ -1,0 +1,14 @@
+{
+  "name": "the-leverage-stack",
+  "version": "1.0.0",
+  "description": "Automated faceless Instagram content pipeline — AI Tools & Finance niche",
+  "main": "automation/pipeline.js",
+  "scripts": {
+    "generate": "node automation/pipeline.js",
+    "post": "node automation/post.js",
+    "status": "node automation/status.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

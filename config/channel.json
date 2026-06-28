@@ -1,0 +1,57 @@
+{
+  "channel": {
+    "name": "The Leverage Stack",
+    "handle": "@theleveragestack",
+    "niche": "AI Tools & Finance",
+    "tagline": "Use AI to build leverage. Build leverage to build wealth.",
+    "platform_primary": "instagram",
+    "platform_crosspost": "facebook",
+    "format": "reels",
+    "post_frequency": "5x_per_week",
+    "post_times_est": ["7:00 AM", "12:00 PM", "6:00 PM"],
+    "best_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+  },
+  "video": {
+    "resolution": "1080x1920",
+    "aspect_ratio": "9:16",
+    "fps": 30,
+    "duration_target_seconds": 45,
+    "format": "mp4"
+  },
+  "style": {
+    "background": "dark_ambient_loop",
+    "text_color": "#FFFFFF",
+    "accent_color": "#C0A060",
+    "font": "Inter Bold",
+    "text_size_hook": 52,
+    "text_size_body": 38,
+    "overlay_opacity": 0.65
+  },
+  "voice": {
+    "provider": "elevenlabs",
+    "voice_id": "TBD",
+    "stability": 0.55,
+    "similarity_boost": 0.75,
+    "model": "eleven_turbo_v2"
+  },
+  "affiliate": {
+    "elevenlabs": {
+      "commission": "55% for 12 months",
+      "link": "TBD_AFTER_SIGNUP"
+    },
+    "writesonic": {
+      "commission": "30% lifetime",
+      "link": "TBD_AFTER_SIGNUP"
+    },
+    "koala_ai": {
+      "commission": "30% lifetime",
+      "link": "TBD_AFTER_SIGNUP"
+    }
+  },
+  "bio": {
+    "line1": "Using AI to build leverage",
+    "line2": "Tools + systems for modern wealth",
+    "line3": "New reel every weekday",
+    "cta": "Free AI starter pack ↓"
+  }
+}

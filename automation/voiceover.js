@@ -145,6 +145,20 @@ async function generateVoiceover(scriptName, profileId) {
   return outPath;
 }
 
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Generate a single voiceover MP3 for a script by name.
+ * Returns the output path. Skips if the file already exists.
+ */
+async function generate(scriptName) {
+  if (!fs.existsSync(AUDIO_OUT)) fs.mkdirSync(AUDIO_OUT, { recursive: true });
+  const profileId = await resolveProfileId(PROFILE_NAME);
+  return generateVoiceover(scriptName, profileId);
+}
+
+module.exports = { generate };
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function run() {
@@ -197,7 +211,9 @@ async function run() {
   console.log('\n[voiceover] Done.');
 }
 
-run().catch(err => {
-  console.error(`[voiceover] Fatal: ${err.message}`);
-  process.exit(1);
-});
+if (require.main === module) {
+  run().catch(err => {
+    console.error(`[voiceover] Fatal: ${err.message}`);
+    process.exit(1);
+  });
+}

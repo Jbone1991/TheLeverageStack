@@ -13,10 +13,10 @@
  *   TIKTOK_CLIENT_SECRET=...
  */
 
-const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const readline = require('readline');
 const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -76,79 +76,50 @@ async function run() {
     process.exit(1);
   }
 
-  const redirectUri = 'http://localhost:3000/callback';
+  const redirectUri = 'https://jbone1991.github.io/TheLeverageStack/callback.html';
   const scope = 'user.info.basic,video.publish';
   const csrfState = Math.random().toString(36).slice(2);
 
   const authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${clientKey}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&state=${csrfState}`;
 
-  console.log('\n[tiktok-auth] Open this URL in the browser where you are logged into your TikTok account:\n');
-  console.log(authUrl);
-  console.log('\n[tiktok-auth] After approving, you will be redirected to localhost:3000/callback');
-  console.log('[tiktok-auth] Starting local server to capture the auth code...\n');
+  console.log('\n[tiktok-auth] Opening TikTok authorization page...');
+  console.log('[tiktok-auth] Log in with your TikTok account and approve access.\n');
+  try { execSync('start "" "' + authUrl + '"'); } catch {
+    console.log('[tiktok-auth] Could not auto-open browser. Open this URL manually:\n' + authUrl);
+  }
 
-  // Start a local HTTP server to catch the redirect
-  await new Promise((resolve, reject) => {
-    const server = http.createServer(async (req, res) => {
-      const url = new URL(req.url, 'http://localhost:3000');
-      const code = url.searchParams.get('code');
-      const state = url.searchParams.get('state');
+  console.log('[tiktok-auth] After approving, the browser will show your authorization code.');
 
-      if (!code) {
-        res.writeHead(400); res.end('No auth code received.');
-        return;
-      }
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const code = await new Promise(resolve => rl.question('[tiktok-auth] Paste the code here: ', ans => { rl.close(); resolve(ans.trim()); }));
 
-      if (state !== csrfState) {
-        res.writeHead(400); res.end('State mismatch — possible CSRF.');
-        return;
-      }
+  if (!code) { console.error('[tiktok-auth] No code entered.'); process.exit(1); }
 
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end('<h2>Authenticated! You can close this tab and return to the terminal.</h2>');
-      server.close();
+  console.log('[tiktok-auth] Exchanging code for access token...');
 
-      console.log('[tiktok-auth] Auth code received. Exchanging for access token...');
-
-      try {
-        const data = await httpsPost('open.tiktokapis.com', '/v2/oauth/token/', {
-          client_key: clientKey,
-          client_secret: clientSecret,
-          code,
-          grant_type: 'authorization_code',
-          redirect_uri: redirectUri,
-        });
-
-        if (data.error) {
-          console.error('[tiktok-auth] Token exchange failed:', data.error, data.error_description);
-          reject(new Error(data.error));
-          return;
-        }
-
-        const { access_token, open_id, expires_in, refresh_token } = data;
-
-        updateEnv('TIKTOK_ACCESS_TOKEN', access_token);
-        updateEnv('TIKTOK_OPEN_ID', open_id);
-        if (refresh_token) updateEnv('TIKTOK_REFRESH_TOKEN', refresh_token);
-
-        console.log('[tiktok-auth] Success!');
-        console.log('  open_id:    ' + open_id);
-        console.log('  expires_in: ' + expires_in + 's (~' + Math.round(expires_in / 86400) + ' days)');
-        console.log('[tiktok-auth] TIKTOK_ACCESS_TOKEN and TIKTOK_OPEN_ID written to .env');
-        resolve();
-      } catch (err) {
-        reject(err);
-      }
-    });
-
-    server.listen(3000, () => {
-      console.log('[tiktok-auth] Listening on http://localhost:3000/callback');
-      // Try to auto-open in browser
-      try { execSync('start "" "' + authUrl + '"'); } catch {}
-    });
-
-    server.on('error', reject);
+  const data = await httpsPost('open.tiktokapis.com', '/v2/oauth/token/', {
+    client_key: clientKey,
+    client_secret: clientSecret,
+    code,
+    grant_type: 'authorization_code',
+    redirect_uri: redirectUri,
   });
+
+  if (data.error) {
+    console.error('[tiktok-auth] Token exchange failed:', data.error, data.error_description);
+    process.exit(1);
+  }
+
+  const { access_token, open_id, expires_in, refresh_token } = data;
+
+  updateEnv('TIKTOK_ACCESS_TOKEN', access_token);
+  updateEnv('TIKTOK_OPEN_ID', open_id);
+  if (refresh_token) updateEnv('TIKTOK_REFRESH_TOKEN', refresh_token);
+
+  console.log('[tiktok-auth] Success!');
+  console.log('  open_id:    ' + open_id);
+  console.log('  expires_in: ' + expires_in + 's (~' + Math.round(expires_in / 86400) + ' days)');
+  console.log('[tiktok-auth] TIKTOK_ACCESS_TOKEN and TIKTOK_OPEN_ID written to .env');
 }
 
 run().catch(err => {

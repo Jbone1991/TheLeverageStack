@@ -254,9 +254,33 @@ const CLICKBANK_VENDORS = {
   elevenlabs: null,    // ElevenLabs has its own affiliate program — use direct link from .env
   writesonic: null,    // same
   koala:      null,    // same
-  // Add ClickBank vendor IDs here as you find products to promote:
-  // 'vendor-id': 'clickbank_vendor_nickname',
+  instadoodle: 'instadoodl',  // AI whiteboard video creator — gravity 31.4, $34/sale, 4.9% CVR
+  // profitclub: 'cbprofclub' — gravity 72.8 but vendor requires affiliate signup at
+  // their affiliate page first; hoplink 307s to /wrong-hoplink/ until then.
 };
+
+// Default ClickBank offer appended to Facebook captions on days with no direct
+// affiliate mention. FB captions are clickable; IG/TikTok captions are not.
+const CLICKBANK_FB_DEFAULT = { vendor: 'instadoodl', pitch: 'Try InstaDoodle — AI whiteboard videos in 3 clicks' };
+
+// Modern query format — the classic NICK.VENDOR.hop.clickbank.net subdomain
+// format fails TLS (wildcard cert only covers one label).
+function clickbankHopLink(vendor) {
+  const nick = process.env.CLICKBANK_NICKNAME;
+  if (!nick || !vendor) return null;
+  return `https://hop.clickbank.net/?affiliate=${nick}&vendor=${vendor}`;
+}
+
+// Facebook-only caption variant: append a clickable HopLink + FTC disclosure.
+function buildFacebookCaption(baseCaption, script) {
+  const mention = script.affiliate_mention;
+  const mapped = mention && CLICKBANK_VENDORS[mention];
+  const vendor = mapped || CLICKBANK_FB_DEFAULT.vendor;
+  const pitch = mapped ? 'Check it out' : CLICKBANK_FB_DEFAULT.pitch;
+  const hop = clickbankHopLink(vendor);
+  if (!hop) return baseCaption;
+  return baseCaption + `\n\n🔗 ${pitch}: ${hop}\n#ad — affiliate link, I may earn a commission`;
+}
 
 async function getClickBankHopLink(vendorId) {
   const devKey      = process.env.CLICKBANK_DEV_KEY;
@@ -351,8 +375,10 @@ async function postNextInQueue() {
   }
 
   // Facebook standalone (explicit Reels post — catches cases cross-post misses)
+  // FB captions are clickable, so this variant carries the ClickBank HopLink.
   try {
-    results.facebook = await postFacebook(videoUrl, caption);
+    const fbCaption = buildFacebookCaption(caption, script);
+    results.facebook = await postFacebook(videoUrl, fbCaption);
   } catch (err) {
     console.error(`[facebook] ERROR: ${err.message}`);
     results.facebook = null;

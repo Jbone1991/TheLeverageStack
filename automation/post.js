@@ -319,7 +319,7 @@ async function buildCaption(script) {
   if (affiliate && affiliate !== 'none') {
     const envKey = `AFFILIATE_${affiliate.toUpperCase().replace(/-/g, '_')}_LINK`;
     const link = process.env[envKey];
-    if (link) {
+    if (link && link !== 'NEEDS_SETUP') {
       caption = caption.replace(/\[AFFILIATE_LINK\]/g, link);
       if (!caption.includes(link)) {
         caption += `\n\n🔗 ${link}`;
@@ -329,6 +329,12 @@ async function buildCaption(script) {
   }
 
   return caption;
+}
+
+// IG/TikTok never render caption URLs as clickable — pointing people to the bio
+// link (which does work) converts better than a dead-text hoplink in the caption.
+function buildBioLinkCaption(baseCaption) {
+  return baseCaption + `\n\n🔗 Link in bio`;
 }
 
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
@@ -354,6 +360,7 @@ async function postNextInQueue() {
     : {};
 
   const caption = await buildCaption(script);
+  const bioLinkCaption = buildBioLinkCaption(caption);
 
   console.log(`\n[post] Next in queue: ${videoFile}`);
   console.log(`[post] Caption (${caption.length} chars): ${caption.slice(0, 100)}...`);
@@ -370,7 +377,7 @@ async function postNextInQueue() {
 
   // Instagram (+ Facebook cross-post via cross_post_to_fb_page_id)
   try {
-    results.instagram = await postInstagram(videoUrl, caption);
+    results.instagram = await postInstagram(videoUrl, bioLinkCaption);
   } catch (err) {
     console.error(`[instagram] ERROR: ${err.message}`);
     results.instagram = null;
@@ -388,7 +395,7 @@ async function postNextInQueue() {
 
   // TikTok
   try {
-    results.tiktok = await postTikTok(videoUrl, caption);
+    results.tiktok = await postTikTok(videoUrl, bioLinkCaption);
   } catch (err) {
     console.error(`[tiktok] ERROR: ${err.message}`);
     results.tiktok = null;

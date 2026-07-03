@@ -97,6 +97,28 @@ async function postInstagram(videoUrl, caption) {
 // Used when explicit FB control is needed beyond the IG cross-post.
 // Meta's Reels publishing API: init → upload binary → publish.
 
+async function getPageAccessToken(pageId) {
+  const userToken = process.env.META_ACCESS_TOKEN;
+  const url = `https://graph.facebook.com/v21.0/${pageId}?fields=access_token&access_token=${userToken}`;
+  const res = await fetch(url);
+  const json = await res.json();
+  if (json.error) throw new Error(`[facebook] Could not get page token: ${JSON.stringify(json.error)}`);
+  if (!json.access_token) throw new Error('[facebook] Page access_token not returned — ensure pages_show_list and pages_manage_posts are granted.');
+  return json.access_token;
+}
+
+async function graphApiPage(method, pageToken, endpoint, body = null) {
+  const url = `https://graph.facebook.com/v21.0${endpoint}${endpoint.includes('?') ? '&' : '?'}access_token=${pageToken}`;
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(`Graph API ${endpoint}: ${JSON.stringify(json.error)}`);
+  return json;
+}
+
 async function postFacebook(videoUrl, caption) {
   const pageId = process.env.FACEBOOK_PAGE_ID;
   if (!pageId) {
@@ -109,8 +131,12 @@ async function postFacebook(videoUrl, caption) {
     return 'dry-run-fb-id';
   }
 
+  // Get Page Access Token (required for video_reels — user token is not sufficient)
+  const pageToken = await getPageAccessToken(pageId);
+  console.log('[facebook] Page access token obtained.');
+
   // Step 1: Initialize upload session
-  const init = await graphApi('POST', `/${pageId}/video_reels`, {
+  const init = await graphApiPage('POST', pageToken, `/${pageId}/video_reels`, {
     upload_phase: 'start',
   });
   const videoId = init.video_id;
@@ -126,18 +152,18 @@ async function postFacebook(videoUrl, caption) {
   const uploadRes = await fetch(uploadUrl, {
     method: 'POST',
     headers: {
-      'Authorization': `OAuth ${process.env.META_ACCESS_TOKEN}`,
+      'Authorization': `OAuth ${pageToken}`,
       'offset': '0',
       'file_size': String(videoBuffer.length),
     },
     body: videoBuffer,
   });
   if (!uploadRes.ok) throw new Error(`[facebook] Upload failed: ${uploadRes.status}`);
-  console.log(`[facebook] Video uploaded.`);
+  console.log('[facebook] Video uploaded.');
 
   // Step 3: Publish
-  const publish = await graphApi('POST', `/${pageId}/video_reels`, {
-    upload_phase: 'publish',
+  const publish = await graphApiPage('POST', pageToken, `/${pageId}/video_reels`, {
+    upload_phase: 'finish',
     video_id:     videoId,
     title:        caption.split('\n')[0].slice(0, 100),
     description:  caption,

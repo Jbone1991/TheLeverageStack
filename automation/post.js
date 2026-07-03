@@ -393,12 +393,18 @@ async function postNextInQueue() {
     results.facebook = null;
   }
 
-  // TikTok
-  try {
-    results.tiktok = await postTikTok(videoUrl, bioLinkCaption);
-  } catch (err) {
-    console.error(`[tiktok] ERROR: ${err.message}`);
-    results.tiktok = null;
+  // TikTok — app is under review; posting manually from phone until approved.
+  // Set TIKTOK_ENABLED=true in .env to resume automated posting.
+  if (process.env.TIKTOK_ENABLED === 'true') {
+    try {
+      results.tiktok = await postTikTok(videoUrl, bioLinkCaption);
+    } catch (err) {
+      console.error(`[tiktok] ERROR: ${err.message}`);
+      results.tiktok = null;
+    }
+  } else {
+    console.log('[tiktok] Skipped — TIKTOK_ENABLED not set (app under review, posting manually)');
+    results.tiktok = 'manual';
   }
 
   // Move to posted (skip in dry run)

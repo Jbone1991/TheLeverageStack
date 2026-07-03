@@ -255,13 +255,16 @@ const CLICKBANK_VENDORS = {
   writesonic: null,    // same
   koala:      null,    // same
   instadoodle: 'instadoodl',  // AI whiteboard video creator — gravity 31.4, $34/sale, 4.9% CVR
-  // profitclub: 'cbprofclub' — gravity 72.8 but vendor requires affiliate signup at
-  // their affiliate page first; hoplink 307s to /wrong-hoplink/ until then.
 };
 
 // Default ClickBank offer appended to Facebook captions on days with no direct
 // affiliate mention. FB captions are clickable; IG/TikTok captions are not.
-const CLICKBANK_FB_DEFAULT = { vendor: 'instadoodl', pitch: 'Try InstaDoodle — AI whiteboard videos in 3 clicks' };
+// Profit Club uses the personal funnel link from the members area — the plain
+// vendor hoplink 307s to /wrong-hoplink/ without the cbm/cbpage params.
+const CLICKBANK_FB_DEFAULT = {
+  url:   'https://hop.clickbank.net/?vendor=cbprofclub&affiliate=jbh48&cbm=2jdus8&tid=main&cbpage=join',
+  pitch: 'The done-for-you system I talk about',
+};
 
 // Modern query format — the classic NICK.VENDOR.hop.clickbank.net subdomain
 // format fails TLS (wildcard cert only covers one label).
@@ -275,9 +278,8 @@ function clickbankHopLink(vendor) {
 function buildFacebookCaption(baseCaption, script) {
   const mention = script.affiliate_mention;
   const mapped = mention && CLICKBANK_VENDORS[mention];
-  const vendor = mapped || CLICKBANK_FB_DEFAULT.vendor;
+  const hop = mapped ? clickbankHopLink(mapped) : CLICKBANK_FB_DEFAULT.url;
   const pitch = mapped ? 'Check it out' : CLICKBANK_FB_DEFAULT.pitch;
-  const hop = clickbankHopLink(vendor);
   if (!hop) return baseCaption;
   return baseCaption + `\n\n🔗 ${pitch}: ${hop}\n#ad — affiliate link, I may earn a commission`;
 }

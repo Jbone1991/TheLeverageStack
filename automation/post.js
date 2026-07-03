@@ -167,6 +167,7 @@ async function postFacebook(videoUrl, caption) {
     video_id:     videoId,
     title:        caption.split('\n')[0].slice(0, 100),
     description:  caption,
+    published:    true,
   });
   console.log(`[facebook] Published. Post ID: ${publish.post_id || videoId}`);
   return publish.post_id || videoId;

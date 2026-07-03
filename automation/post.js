@@ -165,9 +165,8 @@ async function postFacebook(videoUrl, caption) {
   const publish = await graphApiPage('POST', pageToken, `/${pageId}/video_reels`, {
     upload_phase: 'finish',
     video_id:     videoId,
-    title:        caption.split('\n')[0].slice(0, 100),
+    video_state:  'PUBLISHED',
     description:  caption,
-    published:    true,
   });
   console.log(`[facebook] Published. Post ID: ${publish.post_id || videoId}`);
   return publish.post_id || videoId;

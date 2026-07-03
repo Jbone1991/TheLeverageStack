@@ -8,7 +8,7 @@ Posts 5 Reels/week. Fully automated — Claude does the work.
 ## Stack
 - Node.js 18+ (pipeline orchestrator, API poster)
 - FFmpeg at C:/Users/jesse/Documents/ffmpeg/bin/ffmpeg.exe (video assembly)
-- ElevenLabs API (AI voiceover)
+- VoiceBox local server at 127.0.0.1:17493 (AI voiceover — "LeverageVoice" cloned profile, qwen 1.7B engine; free, no API credits)
 - Meta Graph API (Instagram Reels publishing, Facebook cross-post)
 - Cloudflare R2 (video hosting for Meta URL requirement)
 

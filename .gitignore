@@ -5,6 +5,7 @@ content/queue/
 content/posted/
 assets/audio/
 assets/backgrounds/
+assets/tmp/
 node_modules/
 *.mp4
 *.mp3

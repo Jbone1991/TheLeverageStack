@@ -40,7 +40,14 @@ function getR2Client() {
   });
 }
 
-async function uploadVideo(localPath, remoteName) {
+const CONTENT_TYPES = {
+  '.mp4': 'video/mp4',
+  '.html': 'text/html; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg'
+};
+
+async function uploadFile(localPath, remoteName, contentType) {
   loadEnv();
   const client = getR2Client();
   const bucket = process.env.R2_BUCKET_NAME;
@@ -48,14 +55,17 @@ async function uploadVideo(localPath, remoteName) {
 
   const body = fs.readFileSync(localPath);
   const key = remoteName || path.basename(localPath);
+  const type = contentType
+    || CONTENT_TYPES[path.extname(localPath).toLowerCase()]
+    || 'application/octet-stream';
 
-  console.log(`[r2] Uploading ${key} to ${bucket}...`);
+  console.log(`[r2] Uploading ${key} to ${bucket} (${type})...`);
 
   await client.send(new PutObjectCommand({
     Bucket: bucket,
     Key: key,
     Body: body,
-    ContentType: 'video/mp4'
+    ContentType: type
   }));
 
   const publicUrl = `${urlBase}/${key}`;
@@ -63,16 +73,20 @@ async function uploadVideo(localPath, remoteName) {
   return publicUrl;
 }
 
-module.exports = { uploadVideo };
+async function uploadVideo(localPath, remoteName) {
+  return uploadFile(localPath, remoteName, 'video/mp4');
+}
 
-// CLI usage: node automation/upload-r2.js path/to/video.mp4
+module.exports = { uploadVideo, uploadFile };
+
+// CLI usage: node automation/upload-r2.js path/to/file [remote-name]
 if (require.main === module) {
   const filePath = process.argv[2];
   if (!filePath) {
-    console.error('Usage: node automation/upload-r2.js <path-to-mp4>');
+    console.error('Usage: node automation/upload-r2.js <path-to-file> [remote-name]');
     process.exit(1);
   }
-  uploadVideo(filePath).catch(err => {
+  uploadFile(filePath, process.argv[3]).catch(err => {
     console.error('[r2] Error:', err.message);
     process.exit(1);
   });

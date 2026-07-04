@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Leverage Stack — Links</title>
+<meta name="description" content="The AI tools and systems behind The Leverage Stack. Use AI to build leverage. Build leverage to build wealth.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b0e13;
+    --ink-2: #10141c;
+    --gold: #c0a060;
+    --gold-bright: #e2c185;
+    --bone: #efe9dd;
+    --dim: #8b8577;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--ink);
+    color: var(--bone);
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+    position: relative;
+  }
+  /* Atmosphere: faint circuit-grid + gold bloom, echoing the cover art */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(192,160,96,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(192,160,96,0.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, black 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, black 30%, transparent 75%);
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: -22vh; left: 50%;
+    width: 130vw; height: 55vh;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(192,160,96,0.16), transparent 65%);
+    pointer-events: none;
+  }
+  .wrap {
+    width: min(430px, 92vw);
+    padding: 56px 0 40px;
+    position: relative;
+    z-index: 1;
+  }
+  /* Monogram: three stacked bars + rising angle, pure CSS */
+  .mark {
+    width: 58px; height: 58px;
+    margin: 0 auto 22px;
+    border: 1px solid rgba(192,160,96,0.55);
+    border-radius: 50%;
+    position: relative;
+    animation: rise .7s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .mark span {
+    position: absolute; left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold);
+    border-radius: 1px;
+  }
+  .mark span:nth-child(1) { width: 26px; height: 3px; bottom: 14px; }
+  .mark span:nth-child(2) { width: 19px; height: 3px; bottom: 21px; }
+  .mark span:nth-child(3) { width: 12px; height: 3px; bottom: 28px; }
+  .mark span:nth-child(4) {
+    width: 3px; height: 17px; bottom: 27px;
+    left: 62%;
+    transform: translateX(-50%) rotate(38deg);
+    background: var(--gold-bright);
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 650;
+    font-size: clamp(1.7rem, 7vw, 2.05rem);
+    letter-spacing: .01em;
+    text-align: center;
+    color: var(--bone);
+    animation: rise .7s .08s cubic-bezier(.2,.7,.2,1) both;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--gold-bright);
+  }
+  .tagline {
+    text-align: center;
+    font-weight: 300;
+    font-size: .95rem;
+    letter-spacing: .04em;
+    color: var(--dim);
+    margin-top: 10px;
+    animation: rise .7s .16s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .rule {
+    display: flex; align-items: center; gap: 14px;
+    margin: 34px 0 26px;
+    animation: rise .7s .24s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .rule::before, .rule::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(192,160,96,0.4));
+  }
+  .rule::after { background: linear-gradient(90deg, rgba(192,160,96,0.4), transparent); }
+  .rule b {
+    font-weight: 500;
+    font-size: .72rem;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .links { display: flex; flex-direction: column; gap: 14px; }
+  a.card {
+    display: block;
+    text-decoration: none;
+    background: var(--ink-2);
+    border: 1px solid rgba(192,160,96,0.28);
+    border-radius: 14px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    animation: rise .6s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .links a.card:nth-child(1) { animation-delay: .32s; }
+  .links a.card:nth-child(2) { animation-delay: .40s; }
+  .links a.card:nth-child(3) { animation-delay: .48s; }
+  a.card:hover, a.card:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(192,160,96,0.75);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.45), 0 0 0 1px rgba(192,160,96,0.15);
+    outline: none;
+  }
+  a.card:active { transform: translateY(0); }
+  /* sweep shimmer on hover */
+  a.card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(226,193,133,0.09) 50%, transparent 60%);
+    transform: translateX(-120%);
+    transition: transform .5s ease;
+    pointer-events: none;
+  }
+  a.card:hover::after { transform: translateX(120%); }
+  a.card .name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.12rem;
+    color: var(--bone);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  a.card .name::after {
+    content: '→';
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+    color: var(--gold);
+    transition: transform .18s ease;
+  }
+  a.card:hover .name::after { transform: translateX(4px); }
+  a.card .desc {
+    font-weight: 300;
+    font-size: .88rem;
+    line-height: 1.45;
+    color: var(--dim);
+    margin-top: 6px;
+  }
+  a.card.primary {
+    background: linear-gradient(160deg, rgba(192,160,96,0.16), rgba(192,160,96,0.05) 55%), var(--ink-2);
+    border-color: rgba(192,160,96,0.6);
+  }
+  a.card.primary .badge {
+    display: inline-block;
+    font-size: .62rem;
+    font-weight: 600;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--gold);
+    border-radius: 99px;
+    padding: 4px 10px 3px;
+    margin-bottom: 10px;
+  }
+  .disclosure {
+    margin-top: 34px;
+    text-align: center;
+    font-weight: 300;
+    font-size: .72rem;
+    line-height: 1.6;
+    letter-spacing: .02em;
+    color: rgba(139,133,119,0.75);
+    animation: rise .7s .6s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .handle {
+    margin-top: 18px;
+    text-align: center;
+    font-size: .78rem;
+    letter-spacing: .12em;
+    color: var(--gold);
+    animation: rise .7s .68s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    <h1>The Leverage <em>Stack</em></h1>
+    <p class="tagline">Use AI to build leverage. Build leverage to build wealth.</p>
+
+    <div class="rule"><b>The Tools I Use</b></div>
+
+    <nav class="links" aria-label="Affiliate links">
+      <a class="card primary" href="https://hop.clickbank.net/?vendor=cbprofclub&affiliate=jbh48&cbm=2jdus8&tid=bio&cbpage=join" rel="nofollow sponsored">
+        <span class="badge">Start Here</span>
+        <span class="name">ClickBank Profit Club</span>
+        <span class="desc">The done-for-you system I talk about — a full framework for building affiliate income without guesswork.</span>
+      </a>
+      <a class="card" href="https://try.elevenlabs.io/px7nsvvfa1zk" rel="nofollow sponsored">
+        <span class="name">ElevenLabs</span>
+        <span class="desc">The AI voice behind every video on this page. Studio-quality narration from a written script in seconds.</span>
+      </a>
+      <a class="card" href="https://hop.clickbank.net/?affiliate=jbh48&vendor=instadoodl" rel="nofollow sponsored">
+        <span class="name">InstaDoodle</span>
+        <span class="desc">AI whiteboard videos that explain anything — no drawing skill, no editing timeline.</span>
+      </a>
+    </nav>
+
+    <p class="disclosure">Some links above are affiliate links. If you buy through them I may earn a commission, at no extra cost to you. I only list tools used in building this channel.</p>
+    <p class="handle">@theleveragestack</p>
+  </main>
+</body>
+</html>

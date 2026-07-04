@@ -8,7 +8,7 @@
     "platform_crosspost": "facebook",
     "format": "reels",
     "post_frequency": "5x_per_week",
-    "post_times_est": ["7:00 AM", "12:00 PM", "6:00 PM"],
+    "post_times_est": ["6:00 PM"],
     "best_days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
   },
   "video": {

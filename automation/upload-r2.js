@@ -43,8 +43,13 @@ function getR2Client() {
 const CONTENT_TYPES = {
   '.mp4': 'video/mp4',
   '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
   '.png': 'image/png',
-  '.jpg': 'image/jpeg'
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon'
 };
 
 async function uploadFile(localPath, remoteName, contentType) {

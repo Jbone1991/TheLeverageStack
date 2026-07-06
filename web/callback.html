@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Authorization — The Leverage Stack</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#0b0e13; --ink-2:#10141c; --gold:#c0a060; --gold-bright:#e2c185; --bone:#efe9dd; --dim:#8b8577; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Outfit',system-ui,sans-serif; background:var(--ink); color:var(--bone); min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px; line-height:1.6; }
+  .box { width:min(640px,92vw); }
+  h2 { font-family:'Fraunces',serif; font-weight:600; color:var(--gold-bright); font-size:1.5rem; margin-bottom:6px; }
+  p { color:var(--dim); font-weight:300; font-size:.95rem; }
+  code { display:block; background:var(--ink-2); border:1px solid rgba(192,160,96,0.3); color:var(--bone); padding:14px 16px; border-radius:10px; word-break:break-all; font-family:ui-monospace,monospace; font-size:.92rem; margin:16px 0 10px; }
+  .status { color:var(--gold); font-size:.9rem; }
+</style>
+</head>
+<body>
+  <main class="box">
+    <h2>Authorization code</h2>
+    <p>Copy the code below and paste it into the terminal when prompted:</p>
+    <code id="code">Loading…</code>
+    <p class="status" id="status"></p>
+  </main>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+    if (code) {
+      document.getElementById('code').textContent = code;
+      document.getElementById('status').textContent = 'You can close this tab and return to the terminal.';
+    } else if (error) {
+      document.getElementById('code').textContent = 'Error: ' + error;
+      document.getElementById('status').textContent = params.get('error_description') || '';
+    } else {
+      document.getElementById('code').textContent = 'No code found in URL.';
+    }
+  </script>
+</body>
+</html>

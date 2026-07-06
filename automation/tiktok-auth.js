@@ -76,7 +76,8 @@ async function run() {
     process.exit(1);
   }
 
-  const redirectUri = 'https://jbone1991.github.io/TheLeverageStack/callback.html';
+  // Must exactly match a Redirect URI registered in the TikTok developer portal.
+  const redirectUri = 'https://theleveragestack.co/callback.html';
   const scope = 'user.info.basic,video.publish';
   const csrfState = Math.random().toString(36).slice(2);
 

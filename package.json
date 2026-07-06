@@ -6,7 +6,8 @@
   "scripts": {
     "generate": "node automation/pipeline.js",
     "post": "node automation/post.js",
-    "status": "node automation/status.js"
+    "status": "node automation/status.js",
+    "deploy:site": "node automation/deploy-site.js"
   },
   "engines": {
     "node": ">=18"

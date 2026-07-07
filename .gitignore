@@ -10,3 +10,6 @@ node_modules/
 *.mp4
 *.mp3
 *.wav
+
+# Local runtime logs
+logs/

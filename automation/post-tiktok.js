@@ -120,7 +120,8 @@ async function run() {
   const initPayload = {
     post_info: {
       title: caption.slice(0, 2200),
-      privacy_level: 'PUBLIC_TO_EVERYONE',
+      // Sandbox/unaudited apps may only post privately — set TIKTOK_PRIVACY=SELF_ONLY in .env for the demo.
+      privacy_level: process.env.TIKTOK_PRIVACY || 'PUBLIC_TO_EVERYONE',
       disable_duet: false,
       disable_comment: false,
       disable_stitch: false,

@@ -375,22 +375,39 @@ async function postNextInQueue() {
 
   const results = {};
 
-  // Instagram (+ Facebook cross-post via cross_post_to_fb_page_id)
-  try {
-    results.instagram = await postInstagram(videoUrl, bioLinkCaption);
-  } catch (err) {
-    console.error(`[instagram] ERROR: ${err.message}`);
-    results.instagram = null;
-  }
+  // Instagram (+ Facebook cross-post via cross_post_to_fb_page_id), then
+  // Facebook standalone (explicit Reels post — catches cases cross-post misses).
+  // FB captions are clickable, so that variant carries the ClickBank HopLink.
+  // Transient network blips surface as bare "fetch failed" — retry failed
+  // platforms once after 60s before giving up on the run.
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    if (attempt > 1) {
+      console.log('[post] Some platforms failed — retrying in 60s...');
+      await sleep(60000);
+    }
 
-  // Facebook standalone (explicit Reels post — catches cases cross-post misses)
-  // FB captions are clickable, so this variant carries the ClickBank HopLink.
-  try {
-    const fbCaption = buildFacebookCaption(caption, script);
-    results.facebook = await postFacebook(videoUrl, fbCaption);
-  } catch (err) {
-    console.error(`[facebook] ERROR: ${err.message}`);
-    results.facebook = null;
+    if (!results.instagram) {
+      try {
+        results.instagram = await postInstagram(videoUrl, bioLinkCaption);
+      } catch (err) {
+        const cause = err.cause ? ` (${err.cause.code || err.cause.message})` : '';
+        console.error(`[instagram] ERROR: ${err.message}${cause}`);
+        results.instagram = null;
+      }
+    }
+
+    if (!results.facebook) {
+      try {
+        const fbCaption = buildFacebookCaption(caption, script);
+        results.facebook = await postFacebook(videoUrl, fbCaption);
+      } catch (err) {
+        const cause = err.cause ? ` (${err.cause.code || err.cause.message})` : '';
+        console.error(`[facebook] ERROR: ${err.message}${cause}`);
+        results.facebook = null;
+      }
+    }
+
+    if (results.instagram && results.facebook) break;
   }
 
   // TikTok — app is under review; posting manually from phone until approved.
@@ -407,8 +424,13 @@ async function postNextInQueue() {
     results.tiktok = 'manual';
   }
 
-  // Move to posted (skip in dry run)
-  if (!DRY_RUN) {
+  // Move to posted only if something actually went out. If every platform
+  // failed, leave the file in queue/ so the next scheduled run retries it.
+  const anySuccess = Boolean(
+    results.instagram || results.facebook ||
+    (results.tiktok && results.tiktok !== 'manual')
+  );
+  if (!DRY_RUN && anySuccess) {
     fs.renameSync(videoPath, path.join(POSTED_DIR, videoFile));
   }
 
@@ -416,7 +438,11 @@ async function postNextInQueue() {
   console.log(`  Instagram: ${results.instagram || 'failed'}`);
   console.log(`  Facebook:  ${results.facebook  || 'skipped/failed'}`);
   console.log(`  TikTok:    ${results.tiktok    || 'skipped/failed'}`);
-  if (!DRY_RUN) console.log(`  Moved to posted/: ${videoFile}`);
+  if (!DRY_RUN) {
+    console.log(anySuccess
+      ? `  Moved to posted/: ${videoFile}`
+      : `  All platforms failed — left in queue/ for retry: ${videoFile}`);
+  }
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }

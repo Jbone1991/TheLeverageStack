@@ -6,8 +6,11 @@
  * Injects ClickBank affiliate HopLinks into captions where applicable.
  *
  * Usage:
- *   node automation/post.js             — posts next queued video to all platforms
- *   node automation/post.js --dry-run   — shows what would be posted without posting
+ *   node automation/post.js                  — posts next queued video to all platforms
+ *   node automation/post.js --dry-run        — shows what would be posted without posting
+ *   node automation/post.js --from-manifest  — cloud mode: posts next entry from
+ *       content/queue-manifest.json (videos pre-uploaded to R2 by upload-queue.js).
+ *       Used by the GitHub Actions daily-post workflow; needs no local MP4s.
  *
  * Required .env keys:
  *   META_ACCESS_TOKEN, INSTAGRAM_ACCOUNT_ID, FACEBOOK_PAGE_ID
@@ -25,11 +28,15 @@ const POSTED_DIR  = path.join(ROOT, 'content', 'posted');
 const SCRIPTS_DIR = path.join(ROOT, 'content', 'scripts');
 const ENV_PATH    = path.join(ROOT, '.env');
 const DRY_RUN     = process.argv.includes('--dry-run');
+const FROM_MANIFEST = process.argv.includes('--from-manifest');
+const MANIFEST_PATH = path.join(ROOT, 'content', 'queue-manifest.json');
 
 // ─── Env ─────────────────────────────────────────────────────────────────────
 
 function loadEnv() {
   if (!fs.existsSync(ENV_PATH)) {
+    // CI (GitHub Actions) has no .env file — secrets arrive as real env vars.
+    if (process.env.META_ACCESS_TOKEN) return;
     console.error('[post] .env missing. Copy .env.example and fill in keys.');
     process.exit(1);
   }
@@ -344,15 +351,31 @@ async function postNextInQueue() {
 
   if (!fs.existsSync(POSTED_DIR)) fs.mkdirSync(POSTED_DIR, { recursive: true });
 
-  const queue = fs.readdirSync(QUEUE_DIR).filter(f => f.endsWith('.mp4')).sort();
-  if (!queue.length) {
-    console.log('[post] Queue is empty.');
-    return;
+  // Pick the next video: manifest entry in cloud mode, queue dir locally.
+  let videoFile, videoPath = null, manifest = null, entry = null;
+  if (FROM_MANIFEST) {
+    if (!fs.existsSync(MANIFEST_PATH)) {
+      console.log('[post] No queue manifest — run automation/upload-queue.js locally and push it.');
+      return;
+    }
+    manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8'));
+    if (!manifest.pending?.length) {
+      console.log('[post] Manifest queue is empty — render more videos and run upload-queue.js.');
+      return;
+    }
+    entry = manifest.pending[0];
+    videoFile = entry.file;
+  } else {
+    const queue = fs.readdirSync(QUEUE_DIR).filter(f => f.endsWith('.mp4')).sort();
+    if (!queue.length) {
+      console.log('[post] Queue is empty.');
+      return;
+    }
+    videoFile = queue[0];
+    videoPath = path.join(QUEUE_DIR, videoFile);
   }
 
-  const videoFile  = queue[0];
   const base       = path.basename(videoFile, '.mp4');
-  const videoPath  = path.join(QUEUE_DIR, videoFile);
   const scriptPath = path.join(SCRIPTS_DIR, `${base}.json`);
 
   const script = fs.existsSync(scriptPath)
@@ -366,10 +389,13 @@ async function postNextInQueue() {
   console.log(`[post] Caption (${caption.length} chars): ${caption.slice(0, 100)}...`);
   if (DRY_RUN) console.log('[post] --- DRY RUN MODE ---');
 
-  // Upload to R2 once — all platforms pull from same URL
-  const videoUrl = DRY_RUN
-    ? `https://example.r2.dev/${videoFile}`
-    : await uploadVideo(videoPath, videoFile);
+  // Upload to R2 once — all platforms pull from same URL.
+  // In manifest mode the video was pre-uploaded by upload-queue.js.
+  const videoUrl = FROM_MANIFEST
+    ? entry.url
+    : DRY_RUN
+      ? `https://example.r2.dev/${videoFile}`
+      : await uploadVideo(videoPath, videoFile);
 
   console.log(`[post] Video URL: ${videoUrl}`);
 
@@ -424,14 +450,26 @@ async function postNextInQueue() {
     results.tiktok = 'manual';
   }
 
-  // Move to posted only if something actually went out. If every platform
-  // failed, leave the file in queue/ so the next scheduled run retries it.
+  // Mark as posted only if something actually went out. If every platform
+  // failed, leave it queued so the next scheduled run retries it.
   const anySuccess = Boolean(
     results.instagram || results.facebook ||
     (results.tiktok && results.tiktok !== 'manual')
   );
   if (!DRY_RUN && anySuccess) {
-    fs.renameSync(videoPath, path.join(POSTED_DIR, videoFile));
+    if (FROM_MANIFEST) {
+      manifest.pending.shift();
+      manifest.posted = manifest.posted || [];
+      manifest.posted.push({
+        ...entry,
+        postedAt: new Date().toISOString(),
+        instagram: results.instagram || null,
+        facebook: results.facebook || null,
+      });
+      fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n');
+    } else {
+      fs.renameSync(videoPath, path.join(POSTED_DIR, videoFile));
+    }
   }
 
   console.log('\n[post] Results:');
@@ -439,10 +477,13 @@ async function postNextInQueue() {
   console.log(`  Facebook:  ${results.facebook  || 'skipped/failed'}`);
   console.log(`  TikTok:    ${results.tiktok    || 'skipped/failed'}`);
   if (!DRY_RUN) {
+    const where = FROM_MANIFEST ? 'manifest' : 'queue/';
     console.log(anySuccess
-      ? `  Moved to posted/: ${videoFile}`
-      : `  All platforms failed — left in queue/ for retry: ${videoFile}`);
+      ? `  Marked posted (${where}): ${videoFile}`
+      : `  All platforms failed — left in ${where} for retry: ${videoFile}`);
   }
+  // Non-zero exit tells the Actions job the run failed so it shows red.
+  if (!DRY_RUN && !anySuccess) process.exitCode = 1;
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }

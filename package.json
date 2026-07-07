@@ -7,7 +7,8 @@
     "generate": "node automation/pipeline.js",
     "post": "node automation/post.js",
     "status": "node automation/status.js",
-    "deploy:site": "node automation/deploy-site.js"
+    "deploy:site": "node automation/deploy-site.js",
+    "upload:queue": "node automation/upload-queue.js"
   },
   "engines": {
     "node": ">=18"

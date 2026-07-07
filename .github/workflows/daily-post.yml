@@ -1,0 +1,62 @@
+name: Daily 6 PM post
+
+# Publishes the next queued video to Instagram + Facebook from GitHub's
+# network, so the local machine's wifi doesn't matter at post time.
+# Videos are pre-uploaded to R2 by automation/upload-queue.js (run locally),
+# which records them in content/queue-manifest.json.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   META_ACCESS_TOKEN      - long-lived Meta user token (refresh every ~60 days)
+#   INSTAGRAM_ACCOUNT_ID   - IG business account id
+#   FACEBOOK_PAGE_ID       - FB page id
+# Optional (caption hoplinks):
+#   CLICKBANK_NICKNAME, CLICKBANK_DEV_KEY, CLICKBANK_CLERK_KEY
+
+on:
+  schedule:
+    # 23:00 UTC = 6 PM CDT (summer). During CST (winter) this fires at 5 PM
+    # local — change to '0 0 * * 2-6' for 6 PM CST if that matters.
+    - cron: '0 23 * * 1-5'
+  workflow_dispatch: {}
+
+concurrency:
+  group: daily-post
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Post next queued video
+        env:
+          META_ACCESS_TOKEN: ${{ secrets.META_ACCESS_TOKEN }}
+          INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
+          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+          CLICKBANK_NICKNAME: ${{ secrets.CLICKBANK_NICKNAME }}
+          CLICKBANK_DEV_KEY: ${{ secrets.CLICKBANK_DEV_KEY }}
+          CLICKBANK_CLERK_KEY: ${{ secrets.CLICKBANK_CLERK_KEY }}
+        run: node automation/post.js --from-manifest
+
+      - name: Commit updated manifest
+        if: always()
+        run: |
+          if git diff --quiet content/queue-manifest.json 2>/dev/null; then
+            echo "Manifest unchanged - nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content/queue-manifest.json
+          git commit -m "chore: mark daily video posted [skip ci]"
+          git pull --rebase origin master
+          git push

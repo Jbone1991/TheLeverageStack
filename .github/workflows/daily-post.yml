@@ -17,6 +17,8 @@ on:
     # 23:00 UTC = 6 PM CDT (summer). During CST (winter) this fires at 5 PM
     # local — change to '0 0 * * 2-6' for 6 PM CST if that matters.
     - cron: '0 23 * * 1-5'
+    # ONE-TIME test fire: Jul 7 @ 16:30 UTC (11:30 AM CDT) — remove after the test.
+    - cron: '30 16 7 7 *'
   workflow_dispatch: {}
 
 concurrency:

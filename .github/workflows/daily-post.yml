@@ -6,11 +6,15 @@ name: Daily 6 PM post
 # which records them in content/queue-manifest.json.
 #
 # Required repository secrets (Settings -> Secrets and variables -> Actions):
-#   META_ACCESS_TOKEN      - long-lived Meta user token (refresh every ~60 days)
+#   META_ACCESS_TOKEN      - Meta system-user token (never expires)
 #   INSTAGRAM_ACCOUNT_ID   - IG business account id
 #   FACEBOOK_PAGE_ID       - FB page id
 # Optional (caption hoplinks):
 #   CLICKBANK_NICKNAME, CLICKBANK_DEV_KEY, CLICKBANK_CLERK_KEY
+#
+# Self-monitoring: a failed post or a low/empty content queue opens a GitHub
+# issue so the pipeline never dies silently again. Refill routine (local):
+# render -> npm run upload:queue -> commit+push the manifest.
 
 on:
   schedule:
@@ -25,6 +29,7 @@ concurrency:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   post:
@@ -64,3 +69,52 @@ jobs:
           git commit -m "chore: mark daily video posted [skip ci]"
           git pull --rebase origin master
           git push
+
+      # ── Self-monitoring ──────────────────────────────────────────────────────
+      # Runs even after a failed post so we always know how much runway is left.
+      - name: Check queue health
+        id: queue
+        if: always()
+        run: node automation/queue-health.js
+
+      # Warn once (one open issue, no daily spam) when the queue is low or empty.
+      - name: Open refill issue if queue is low/empty
+        if: always() && (steps.queue.outputs.state == 'low' || steps.queue.outputs.state == 'empty')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STATE: ${{ steps.queue.outputs.state }}
+          PENDING: ${{ steps.queue.outputs.pending }}
+        run: |
+          existing=$(gh issue list --state open --search "Content queue needs refill in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            echo "Refill issue #$existing already open — not duplicating."
+            exit 0
+          fi
+          gh issue create --title "⚠️ Content queue needs refill" \
+            --body "Queue state: **$STATE** — **$PENDING** video(s) pending.
+
+          The daily poster will run dry soon. Refill locally:
+          \`\`\`
+          # render new day-XX videos, then:
+          npm run upload:queue        # uploads to R2 + updates content/queue-manifest.json
+          git add content/queue-manifest.json && git commit -m 'chore: refill queue' && git push
+          \`\`\`
+          Close this issue once the queue is topped up."
+
+      # Loud failure: a red run opens an issue with a link to the logs.
+      - name: Open issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          BODY="Run on $(date -u +%Y-%m-%d) failed. Logs: $RUN_URL
+
+          Common causes: invalid META_ACCESS_TOKEN, Meta API rejection, or R2 URL not reachable.
+          The video was left queued and will be retried on the next run."
+          existing=$(gh issue list --state open --search "Daily post failed in:title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$BODY"
+          else
+            gh issue create --title "❌ Daily post failed" --body "$BODY"
+          fi

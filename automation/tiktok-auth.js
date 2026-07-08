@@ -76,8 +76,11 @@ async function run() {
     process.exit(1);
   }
 
-  // Must exactly match a Redirect URI registered in the TikTok developer portal.
-  const redirectUri = 'https://theleveragestack.co/callback.html';
+  // Must match a Redirect URI registered in the TikTok developer portal
+  // CHARACTER-FOR-CHARACTER (trailing slash and .html included). Override in
+  // .env via TIKTOK_REDIRECT_URI to paste the exact value from the portal.
+  const redirectUri = process.env.TIKTOK_REDIRECT_URI || 'https://theleveragestack.co/callback.html';
+  console.log('[tiktok-auth] Using redirect_uri: ' + redirectUri);
   const scope = 'user.info.basic,video.publish';
   const csrfState = Math.random().toString(36).slice(2);
 

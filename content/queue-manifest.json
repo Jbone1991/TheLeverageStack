@@ -1,11 +1,6 @@
 {
   "pending": [
     {
-      "file": "day-07.mp4",
-      "url": "https://pub-af19da4f248f47d1a2ef912095fe638c.r2.dev/day-07.mp4",
-      "uploaded": "2026-07-07T06:05:55.553Z"
-    },
-    {
       "file": "day-08.mp4",
       "url": "https://pub-af19da4f248f47d1a2ef912095fe638c.r2.dev/day-08.mp4",
       "uploaded": "2026-07-07T06:06:40.116Z"
@@ -153,6 +148,14 @@
       "postedAt": "2026-07-10T23:57:16.114Z",
       "instagram": "17977426659059526",
       "facebook": "122107811127380990"
+    },
+    {
+      "file": "day-07.mp4",
+      "url": "https://pub-af19da4f248f47d1a2ef912095fe638c.r2.dev/day-07.mp4",
+      "uploaded": "2026-07-07T06:05:55.553Z",
+      "postedAt": "2026-07-13T23:55:10.056Z",
+      "instagram": "17879816742612476",
+      "facebook": "122108948313380990"
     }
   ]
 }

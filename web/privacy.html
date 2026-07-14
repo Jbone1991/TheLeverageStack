@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,650;1,9..144,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/icon.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -30,35 +31,57 @@
 
 <main>
   <article class="prose" style="padding:56px 0 40px;">
+    <img src="icon.png" alt="The Leverage Stack app icon" class="app-icon">
     <span class="eyebrow">Legal</span>
     <h1>Privacy Policy</h1>
-    <p class="meta"><strong>Effective date:</strong> June 30, 2026</p>
+    <p class="meta"><strong>Effective date:</strong> July 13, 2026</p>
 
-    <p>The Leverage Stack is a content publication and the private automation that publishes it. This policy describes how we handle any data encountered during operation.</p>
+    <p>The Leverage Stack ("we," "our," or "the operator") publishes educational short-form video content about AI tools and personal finance, and operates a publishing tool that connects to TikTok, Instagram, and Facebook to post that content on our own accounts. This policy explains what data our TikTok integration accesses, why, and how it is handled.</p>
 
-    <h2>1. Data we collect</h2>
-    <p>We do not collect personal data from visitors to this website or from any users. The publishing tool operates solely on behalf of its owner to post content to social media platforms including TikTok, Instagram, and Facebook. There is no user-facing registration, login, or data entry.</p>
+    <h2>1. Who this applies to</h2>
+    <p>This application is a single-operator content-publishing tool. It is not a public service, and it is not designed for use by third-party TikTok users. The only TikTok account connected to this application is our own (<strong>@theleveragestack</strong>). This policy still discloses, in full, what our TikTok integration accesses and how that data is handled, since our app requests the scopes described below.</p>
 
-    <h2>2. TikTok API data</h2>
-    <p>When authenticating with TikTok, an access token is obtained via OAuth and stored locally on a private machine. This token is used only to publish videos to our own TikTok account. We do not access, store, or share any data belonging to other TikTok users.</p>
+    <h2>2. Data our TikTok integration accesses</h2>
+    <p>Our application authenticates with TikTok using OAuth 2.0 and requests the following scopes, each of which returns specific data:</p>
+    <ul>
+      <li><strong>user.info.basic</strong> — returns the connected account's TikTok open_id, display name, and avatar URL. Used only to confirm which account is authorized and to display it in our internal tooling.</li>
+      <li><strong>video.publish / video.upload</strong> — allows our application to upload a video file and its caption directly to the connected TikTok account, and returns a publish status and post ID once the upload completes.</li>
+    </ul>
+    <p>We do not request or receive access to any other TikTok user's data. We do not use TikTok data to build advertising profiles, and we do not use TikTok login data for any purpose other than operating our own account.</p>
 
-    <h2>3. Data sharing</h2>
-    <p>We do not sell, trade, or share any data with third parties. Authentication credentials are stored locally and never transmitted to any external server other than the relevant platform APIs (TikTok, Meta).</p>
+    <h2>3. Video content and captions</h2>
+    <p>Video files and captions published through TikTok are content we create ourselves. Rendered video files are stored temporarily in Cloudflare R2 object storage (a cloud hosting provider) so that TikTok's and Meta's APIs can retrieve them at publish time, then removed from the active queue after publishing. No third-party personal data is contained in this content.</p>
 
-    <h2>4. Data retention</h2>
-    <p>Access tokens are stored locally in a private environment file on the operator's machine. They are refreshed as needed and can be revoked at any time through the respective platform's developer settings.</p>
+    <h2>4. Data sharing with third parties</h2>
+    <p>We do not sell or trade data. Data is shared only with the service providers necessary to operate the publishing pipeline:</p>
+    <ul>
+      <li><strong>TikTok</strong> (via the TikTok Content Posting API) — to publish our videos.</li>
+      <li><strong>Meta Platforms, Inc.</strong> (via the Graph API) — to cross-post to Instagram and Facebook.</li>
+      <li><strong>Cloudflare, Inc.</strong> — to host this website and temporarily store video files for publishing.</li>
+      <li><strong>ClickBank</strong> — to process affiliate commission tracking for links on this site (see Section 6).</li>
+    </ul>
+    <p>Each of these providers processes data under their own privacy policies and terms of service.</p>
 
-    <h2>5. Affiliate links</h2>
+    <h2>5. Data retention and deletion</h2>
+    <p>OAuth access and refresh tokens are stored in an encrypted repository secret (for automated posting) and, for local development, in an environment file on a private machine. Tokens are refreshed automatically before expiry and are never logged or transmitted anywhere other than the issuing platform's own token endpoint. Rendered videos are deleted from cloud storage shortly after they are published. Any token can be permanently revoked at any time — see our <a href="data-deletion.html">Data Deletion</a> page for instructions.</p>
+
+    <h2>6. Affiliate links</h2>
     <p>This site contains affiliate links. When you click one, the destination merchant may set its own cookies to attribute a purchase. We do not receive personal information from these clicks beyond aggregate, anonymized commission reporting from the affiliate networks.</p>
 
-    <h2>6. Children's privacy</h2>
-    <p>This site and tool do not interact with or knowingly collect data from children under 13.</p>
+    <h2>7. Security</h2>
+    <p>Access tokens are never committed to source control, are transmitted only over HTTPS, and are stored using platform-native encrypted secrets management (for cloud-based posting) or a local, non-networked file (for manual operation). Access to these credentials is limited to the account operator.</p>
 
-    <h2>7. Changes to this policy</h2>
-    <p>This policy may be updated at any time. The effective date above reflects the most recent revision.</p>
+    <h2>8. Children's privacy</h2>
+    <p>This site and tool do not knowingly collect data from children under 13, and are not directed at children.</p>
 
-    <h2>8. Contact</h2>
-    <p>For questions, contact us at <a href="mailto:centerlinewebsolutions@gmail.com">centerlinewebsolutions@gmail.com</a>.</p>
+    <h2>9. TikTok platform compliance</h2>
+    <p>Our use of TikTok's APIs complies with the <a href="https://www.tiktok.com/legal/page/uspolicy/developer-terms-of-service/en" target="_blank" rel="noopener">TikTok Developer Terms of Service</a> and the <a href="https://www.tiktok.com/community-guidelines" target="_blank" rel="noopener">TikTok Community Guidelines</a>. We only publish content we own and have created ourselves, only to our own connected TikTok account, and we do not use TikTok data for any purpose outside operating that account.</p>
+
+    <h2>10. Changes to this policy</h2>
+    <p>This policy may be updated at any time to reflect changes in the tool, the scopes it requests, or applicable law. The effective date above reflects the most recent revision. Material changes will be reflected on this page.</p>
+
+    <h2>11. Contact</h2>
+    <p>For questions about this policy or to request data deletion, contact us at <a href="mailto:centerlinewebsolutions@gmail.com">centerlinewebsolutions@gmail.com</a>.</p>
   </article>
 </main>
 

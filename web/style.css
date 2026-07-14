@@ -70,6 +70,7 @@ header.site {
 .brand .mark span:nth-child(4){ width:2px;  height:10px; bottom:15px; left:62%; transform:translateX(-50%) rotate(38deg); background:var(--gold-bright); }
 .brand .name { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.05rem; color: var(--bone); }
 .brand .name em { font-style: italic; color: var(--gold-bright); }
+.app-icon { width: 40px; height: 40px; border-radius: 8px; display: block; margin-bottom: 18px; }
 nav.menu { display: flex; align-items: center; gap: 26px; }
 nav.menu a {
   color: var(--dim); font-size: .92rem; font-weight: 400; letter-spacing: .02em;
